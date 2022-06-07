@@ -1,6 +1,6 @@
 # mIRC - Redes
 
-Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implementaremos uma versão simplificada do protocolo IRC (Internet Relay Chat). Sua definição pode ser encontrada em: <https://tools.ietf.org/html/rfc1459.> com uma interface gráfica
+Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implementaremos uma versão simplificada do protocolo IRC (Internet Relay Chat).
 
 > Atualmente, o projeto encontra-se na versão para a primeira entrega `Módulo 1 - Implementação de Sockets (entrega 07/06/2022)`
 
