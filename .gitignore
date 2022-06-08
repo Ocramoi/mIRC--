@@ -1,5 +1,6 @@
 # Project defined
 build/*
+flycheck_.*
 
 # Prerequisites
 *.d
