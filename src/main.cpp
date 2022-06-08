@@ -1,28 +1,44 @@
+#include "./Client/Client.hpp"
+#include "./Utils/Utils.hpp"
+
 #include <bits/stdc++.h>
 #include <mutex>
 #include <future>
-#include "./Client/Client.hpp"
 
 using namespace std;
 
 int main(int argc, char **argv) {
-    shared_ptr<Client> c;
+    shared_ptr<Client> client;
     mutex outputMutex;
 
     {
-        string nick, ip;
+        string nick, port;
         if (argc <= 1) {
             cout << "Nick: "; cin >> nick;
-            cout << "Address ['0' for passive mode]: "; cin >> ip;
+            cout << "Port for binding ['0' for default (" << Conn::PORT << ")]: "; cin >> port;
         } else if (argc == 2) {
             cout << "Nick: "; cin >> nick;
-            ip = string(argv[1]);
+            port = string(argv[1]);
         } else {
             nick = string(argv[1]);
-            ip = string(argv[2]);
+            port = string(argv[2]);
         }
         cout << endl;
-        c = make_shared<Client>(nick, ip, outputMutex);
+        client = make_shared<Client>(nick, port, outputMutex);
+    }
+
+    Utils::showHandlerUsage(outputMutex);
+
+    bool loop{true}; string cmmd;
+    while (loop) {
+        getline(cin, cmmd);
+        Utils::debugPrint("Input: '", cmmd, "'");
+
+        if (cmmd[0] == '/') {
+            loop = Utils::handleCommand(cmmd, outputMutex, client);
+        } else {
+            client->sendMsg(cmmd);
+        }
     }
 
     return 0;

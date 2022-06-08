@@ -12,10 +12,11 @@ DEXEC=../build/debug
 OBJ_FOLDER=objs
 COMPILE_FLAGS=-Wextra -Ofast -std=gnu++17
 DEBUG_FLAGS=-Wextra -Og -g3 -DDEBUG -std=gnu++17
-VALGRIND_FLAGS=--leak-check=full --show-leak-kinds=all --track-origins=yes -s
+# VALGRIND_FLAGS=--leak-check=full --show-leak-kinds=all --track-origins=yes -s
+VALGRIND_FLAGS=
 LD_FLAGS:=-lpthread
 
-all: setup main.o Client.o
+all: setup main.o Client.o Utils.o
 	$(CC) $(COMPILE_FLAGS) *.o -o $(EXEC) $(LD_FLAGS)
 
 main.o: main.cpp
@@ -23,6 +24,9 @@ main.o: main.cpp
 
 Client.o: Client/Client.cpp
 	$(CC) $(COMPILE_FLAGS) Client/Client.cpp -c
+
+Utils.o: Utils/Utils.cpp
+	$(CC) $(COMPILE_FLAGS) Utils/Utils.cpp -c
 
 # classes.o: $(filter-out $(wildcard **/flycheck_*.cpp), $(wildcard classes/*.cpp))
 # 	$(CC) $(COMPILE_FLAGS) $(filter-out $(wildcard **/flycheck_*.cpp), $(wildcard classes/*.cpp)) -c
