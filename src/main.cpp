@@ -31,15 +31,20 @@ int main(int argc, char **argv) {
 
     bool loop{true}; string cmmd;
     while (loop) {
-        getline(cin, cmmd);
+        if (!getline(cin, cmmd)) break;
+
         Utils::debugPrint("Input: '", cmmd, "'");
 
         if (cmmd[0] == '/') {
             loop = Utils::handleCommand(cmmd, outputMutex, client);
         } else {
             client->sendMsg(cmmd);
+            if (!client->nConnectedPeers())
+                cout << "No current connections!" << endl;
         }
     }
+
+    cout << "Bye! See you soon (@ ^-^)/" << endl;
 
     return 0;
 }
