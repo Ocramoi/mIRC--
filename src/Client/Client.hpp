@@ -72,6 +72,7 @@ class Client {
 
         status_t connectToPeer(const string& addr, const string& port);
         status_t sendMsg(const string& msg);
+        size_t nConnectedPeers();
 };
 
 #endif // CLIENT_H_

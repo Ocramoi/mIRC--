@@ -140,7 +140,7 @@ auto Client::asyncListener() -> decltype(Client::asyncListener()) {
 
 auto Client::receiveFromConnection(
     string clientIp
-) -> status_t {
+) -> decltype(Client::receiveFromConnection(clientIp)) {
     Conn::USER_CONNECTION_t connection{};
     try {
         connection = connections[clientIp].first;
@@ -172,7 +172,7 @@ auto Client::receiveFromConnection(
     return 0;
 }
 
-auto Client::sendMsg(const string &msg) -> status_t {
+auto Client::sendMsg(const string &msg) -> decltype(Client::sendMsg(msg)) {
     int nBytes;
     lock_guard<mutex> conLock{connectionsLocker};
     vector<indexing_t> discarted;
@@ -199,7 +199,7 @@ auto Client::sendMsg(const string &msg) -> status_t {
     return 0;
 }
 
-auto Client::connectToPeer(const string &addr, const string &port) -> status_t {
+auto Client::connectToPeer(const string &addr, const string &port) -> decltype(Client::connectToPeer(addr, port)) {
     bool checkCon{false};
     {
         lock_guard<mutex> conLock{connectionsLocker};
@@ -267,4 +267,8 @@ auto Client::connectToPeer(const string &addr, const string &port) -> status_t {
     }
 
     return 0;
+}
+
+auto Client::nConnectedPeers() -> decltype(Client::nConnectedPeers()) {
+    return connections.size();
 }
