@@ -7,8 +7,8 @@ Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implem
 ## Autores
 
 - Lourenço de Salles Roselino &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 11796805
-- Marco Antônio Ribeiro de Toledo | 11796419
-- Melissa Motoki Nogueira &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 5588687
+- Marco Antônio Ribeiro de Toledo &nbsp;&nbsp;&nbsp;| 11796419
+- Melissa Motoki Nogueira &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 5588687
 
 > O código foi compilado utilizando `gcc versão 7.5.0`, com `target = Linux GNU x86_64`. O código foi desenvolvido em `C++17`, usando a `flag -std=gnu++17` durante a compilação.
 
