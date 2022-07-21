@@ -38,17 +38,15 @@ Para testar o código, compile-o com o comando `make all`.
 O servidor será iniciado na porta `6667` (essa configuração está contida na variável `static string PORT{}` no arquivo ![`Conn.hpp`](src/Utils/Conn.hpp)). O programa cliente também será iniciado.
 
 ## Comandos disponíveis
-> Na versão para a segunda entrega `Módulo 2 - Comunicação entre múltiplos clientes e servidor (entrega 19/07/2022)`
 
+<br>**Comandos comuns a todos os usuários:**<br>
 `/connect` - Estabelece a conexão com o servidor;<br>
 `/quit` - O cliente fecha a conexão e fecha a aplicação;<br>
 `/ping` - O servidor retorna "pong" assim que receber a mensagem.<br>
-
-> Na versão para a entrega final `Módulo 3 - Implementação de múltiplos canais (entrega 19/07/2022)`
-
 `/join nomeCanal` - Entra no canal;<br>
 `/nickname apelidoDesejado` - O cliente passa a ser reconhecido pelo apelido especificado;<br>
 `/ping` - O servidor retorna "pong" assim que receber a mensagem.<br>
+
 <br>**Comandos apenas para administradores de canais:**<br>
 `/kick nomeUsurio` - Fecha a conexão de um usuário especificado;<br>
 `/mute nomeUsurio` - Faz com que um usuário não possa enviar mensagens neste canal;<br>
