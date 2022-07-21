@@ -22,7 +22,6 @@ O vídeo de apresentação do projeto pode ser acessado através do YouTube ou G
     └── src
         ├── Makefile
         ├── main.cpp
-        ├── client.cpp
         └── Utils
                 └── Conn.hpp
                 └── IRC.cpp
