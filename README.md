@@ -16,6 +16,23 @@ Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implem
 
 O vídeo de apresentação do projeto pode ser acessado através do YouTube ou Google Drive.
 
+# Árvore de arquivos do projeto
+    .
+    ├── README.md
+    └── src
+        ├── Makefile
+        ├── main.cpp
+        ├── client.cpp
+        └── Utils
+                └── Conn.hpp
+                └── IRC.cpp
+                └── IRC.hpp
+                └── Utils.cpp
+                └── Utils.hpp
+        └── Client
+                └── Client.cpp
+                └── Client.hpp
+        
 ## Como usar
 
 Para testar o código, compile-o com o comando `make all`.
