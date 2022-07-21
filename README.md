@@ -1,4 +1,4 @@
-# mIRC - Redes
+# mIRC - Internet Relay Chat
 
 Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implementaremos uma versão simplificada do protocolo IRC (Internet Relay Chat).
 
