@@ -12,6 +12,10 @@ Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implem
 
 > O código foi compilado utilizando `gcc versão 7.5.0`, com `target = Linux GNU x86_64`. O código foi desenvolvido em `C++17`, usando a `flag -std=gnu++17` durante a compilação.
 
+## Vídeo
+
+O vídeo de apresentação do projeto pode ser acessado através do YouTube ou Google Drive.
+
 ## Como usar
 
 Para testar o código, compile-o com o comando `make all`.
