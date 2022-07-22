@@ -3,6 +3,7 @@
 #include "../Utils/Utils.hpp"
 #include "../Channel/Channel.hpp"
 
+
 decltype(Server::serverHints) Server::serverHints = {
     .ai_flags = AI_PASSIVE,
     .ai_family = AF_INET,
@@ -16,7 +17,20 @@ decltype(Server::serverHints) Server::serverHints = {
     .ai_socktype = SOCK_STREAM,
 };
 
-decltype(Server::handlers) Server::handlers = {};
+decltype(Server::handlers) Server::handlers = {
+	"/join", {
+	"Joins channel based on argument",
+	[](const string& raw, socket_t fd) -> void {}
+},
+	"/nickname", {
+	"Client is regonized by name on argument",
+	[](const string& raw, socket_t fd) -> void {}
+},
+	"/ping", {
+	"Pong! (pings the server)",
+	[](const string& raw, socket_t fd) -> void {}
+}
+};
 
 Server::~Server() {
     listening.store(false);
