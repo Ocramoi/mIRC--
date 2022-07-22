@@ -2,7 +2,7 @@
 # mIRC--
 #
 # @file
-# @version 0.1
+# @version 1.0
 
 CC=clang++
 SRC_FILES=main.cpp $(wildcard **/*.cpp)

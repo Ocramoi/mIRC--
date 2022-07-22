@@ -15,7 +15,8 @@ namespace Conn {
     constexpr size_t maxConns{256},
         maxMsgSize{4096};
     constexpr int maxEvts{512};
-    static string PORT{"6667"};
+    static string PORT{"6667"},
+        ADDRESS{"127.0.0.1:6667"};
     using USER_CONNECTION_t = struct {
         string nick,
             ipString;

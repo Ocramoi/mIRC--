@@ -25,52 +25,35 @@ using std::future;
 using std::pair;
 using std::vector;
 
-/*
-** TODO Use numerical IP address instead of string
-** NOTE Maybe use a lock-free alternative for connection handling?
-** NOTE Maybe poll()ing over the socket and a pipe for async connection handling on close?
-*/
-
 class Client {
-    public:
-        static addrinfo serverHints,
-            peerHints;
     private:
-        addrinfo *serverAddrTmp{},
-            *serverAddr{};
-        int serverSocket{INT_MAX}, clientSocket{INT_MAX};
+        int clientSocket{INT_MAX};
         atomic_bool listening{true};
 
-        // TODO reimplement future cacheing
         unordered_map<indexing_t, pair<Conn::USER_CONNECTION_t, future<status_t>>> connections;
         mutex connectionsLocker;
 
         mutex &outputMutex;
-        string nick, port;
 
         void setup();
         status_t setupListener();
         status_t setupSender();
-        status_t asyncListener();
         status_t receiveFromConnection(string clientIp);
 
         future<status_t> listenerHandler;
     public:
+        static addrinfo peerHints;
         Client(
-            string &_nick,
-            string &_port,
             mutex &_outputMutex
-        ) : nick(_nick),
-            outputMutex(_outputMutex),
-            port(_port) {
-            memset(serverAddrTmp, 0, sizeof(*serverAddrTmp)); memset(serverAddr, 0, sizeof(*serverAddr));
+        ) : outputMutex(_outputMutex) {
             setup();
         };
         ~Client();
 
         status_t connectToPeer(const string& addr, const string& port);
         status_t sendMsg(const string& msg);
-        size_t nConnectedPeers();
+
+        bool connected();
 };
 
 #endif // CLIENT_H_

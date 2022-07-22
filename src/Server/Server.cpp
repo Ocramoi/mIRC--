@@ -12,35 +12,28 @@ decltype(Server::serverHints) Server::serverHints = {
     .ai_addr = NULL,
     .ai_canonname = NULL,
     .ai_next = NULL
-}, Server::peerHints = {
-    .ai_family = AF_INET,
-    .ai_socktype = SOCK_STREAM,
-};
-
-decltype(Server::handlers) Server::handlers = {
-	"/join", {
-	"Joins channel based on argument",
-	[](const string& raw, socket_t fd) -> void {}
-},
-	"/nickname", {
-	"Client is regonized by name on argument",
-	[](const string& raw, socket_t fd) -> void {}
-},
-	"/ping", {
-	"Pong! (pings the server)",
-	[](const string& raw, socket_t fd) -> void {}
-}
 };
 
 Server::~Server() {
-    listening.store(false);
+    if (!listening.load()) return;
+    kill();
+}
 
+void Server::kill() {
+    channels.clear();
+    lock_guard<mutex> lockConnections{connectionsLocker};
     for (const auto& peer : connections)
         shutdown(peer.first, SHUT_RDWR);
+    connections.clear();
+    listening.store(false);
 
     shutdown(serverSocket, SHUT_RDWR);
-
     close(serverSocket);
+
+    if (events) {
+        free(events);
+        events = nullptr;
+    }
 }
 
 void Server::setup() {
@@ -53,7 +46,6 @@ void Server::setup() {
     }
 
     listenerHandler = async(std::launch::async, [&]() -> auto { return asyncListener(); });
-    listenerHandler.wait(); // TODO Better waiting
 }
 
 auto Server::setupListener() -> decltype(Server::setupListener()) {
@@ -129,17 +121,29 @@ auto Server::asyncListener() -> decltype(Server::asyncListener()) {
     if (epoll_ctl(epollFd, EPOLL_CTL_ADD, serverSocket, &event) == -1) return 1;
 
     while (listening.load()) {
-        eventCount = epoll_wait(epollFd, events, Conn::maxEvts, -1);
+        eventCount = epoll_wait(epollFd, events, Conn::maxEvts, 200);
 
-        for (decltype(eventCount) i{0}; i < eventCount; ++i) {
+        for (decltype(eventCount) i{0}; i < eventCount && listening.load(); ++i) {
             auto curFd{events[i].data.fd};
 
             if (
                 (events[i].events & EPOLLERR) ||
                 (events[i].events & EPOLLHUP) ||
-                (events[i].events & EPOLLERR)
-            ) throw std::runtime_error("Faulty descriptor notified!");
-            else if (curFd == serverSocket) {
+                (!(events[i].events & EPOLLIN))
+            ) {
+                lock_guard<mutex> lockConnections(connectionsLocker);
+                if (connections.find(curFd) != connections.end()) {
+                    Utils::msgPrint(
+                        outputMutex,
+                        "Peer ",
+                        connections[curFd].nick,
+                        " disconnected"
+                    );
+                    shutdown(curFd, SHUT_RDWR);
+                    connections.extract(curFd);
+                }
+                continue;
+            } else if (curFd == serverSocket) {
                 sockaddr_storage curServerAddr{};
                 socklen_t clientLen{sizeof(decltype(curServerAddr))};
 
@@ -160,31 +164,26 @@ auto Server::asyncListener() -> decltype(Server::asyncListener()) {
 
                 auto clientIp{Utils::ipToString(reinterpret_cast<sockaddr*>(&curServerAddr), clientLen)};
 
-                lock_guard<mutex> conLock{connectionsLocker};
-                connections[newServerFd] = { .nick = clientIp, .ipString = clientIp, .socket = newServerFd, .active = true };
-                channels.emplace(
-                    std::piecewise_construct,
-                    std::forward_as_tuple("main"),
-                    std::forward_as_tuple(this, "main")
-                );
-                channels.at("main").joinChannel(connections[newServerFd]);
-
                 {
-                    lock_guard<mutex> coutLock{outputMutex};
-                    cout << ": New connection from " << clientIp << endl;
+                    lock_guard<mutex> conLock{connectionsLocker};
+                    connections.insert({newServerFd, { .nick = clientIp, .ipString = clientIp, .socket = newServerFd, .active = true }});
                 }
+
+                Utils::msgPrint(outputMutex, "New connection from ", clientIp);
             } else {
                 auto count{read(curFd, msgTmp, Conn::maxMsgSize)};
                 if (count <= 0) {
-                    if (errno != EAGAIN) shutdown(events[i].data.fd, SHUT_RDWR);
-                    Utils::msgPrint(
-                        outputMutex,
-                        ": Peer ",
-                        connections[curFd].nick,
-                        " disconnected"
-                    );
-                    close(curFd);
-                    connections.extract(curFd);
+                    lock_guard<mutex> lockConnections(connectionsLocker);
+                    if (connections.find(curFd) != connections.end()) {
+                        Utils::msgPrint(
+                            outputMutex,
+                            "Peer ",
+                            connections[curFd].nick,
+                            " disconnected"
+                        );
+                        shutdown(curFd, SHUT_RDWR);
+                        connections.extract(curFd);
+                    }
                     continue;
                 }
 
@@ -198,8 +197,14 @@ auto Server::asyncListener() -> decltype(Server::asyncListener()) {
                 } while ((count = read(curFd, msgTmp, Conn::maxMsgSize)) > 0);
                 Utils::debugPrint("MSG: ", received);
 
-                auto values{Utils::split(received, ' ')};
-                if (values.at(0).at(0) != '/') {
+                auto sliced{Utils::split(received, ' ')};
+                if (sliced.at(0).at(0) == '/') {
+                    if (handlers.find(sliced.at(0)) != handlers.end())
+                        handlers.at(sliced.at(0)).second(received, curFd);
+                    else
+                        handlers.at("/commands").second(received, curFd);
+                } else {
+                    sendMsg("Try using a command! ('/...')", curFd);
                 }
             }
         }
@@ -208,36 +213,70 @@ auto Server::asyncListener() -> decltype(Server::asyncListener()) {
     return 0;
 }
 
-// auto Server::receiveFromConnection(
-//     socket_t clientSocket
-// ) -> decltype(Server::receiveFromConnection(clientSocket)) {
-//     Conn::USER_CONNECTION_t connection{};
-//     try {
-//         connection = connections[clientSocket].first;
-//     } catch (...) {
-//         cerr << "Error receiving from connection with " << clientSocket << endl;
-//         return -1;
-//     }
+auto Server::handleNick(
+    const string &raw,
+    socket_t fd
+) -> decltype(Server::handleNick(raw, fd)) {
+    auto sliced{Utils::split(raw, ' ')};
+    if (sliced.size() < 2) return 1;
+    Utils::debugPrint(
+        "Renaming '" +
+        connections.at(fd).nick +
+        "' to '" +
+        sliced.at(1)
+    );
+    connections.at(fd).nick = sliced.at(1);
+    sendMsg("Succesfully renamed to '" + sliced.at(1) + "'!", fd);
+    return 0;
+}
 
-//     char raw[Conn::maxMsgSize + 1] = { '\0' }; size_t nBytes;
-//     while ((nBytes = recv(connection.socket, raw, Conn::maxMsgSize, 0)) > 0) {
-//         raw[nBytes] = '\0';
-//         if (raw[nBytes - 1] == '\n')
-//             raw[nBytes - 1] = '\0';
+auto Server::handleJoin(
+    const string &raw,
+    socket_t fd
+) -> decltype(handleJoin(raw, fd)) {
+    auto sliced{Utils::split(raw, ' ')};
+    if (sliced.size() < 2) return 1;
 
-//         {
-//             lock_guard<mutex> coutLock{outputMutex};
-//             Utils::debugPrint("Received ", nBytes, " bytes...");
-//             cout << "(" << connection.nick << ")" << " <- '" << raw << '\'' << endl;
-//         }
-//     }
+    auto name{sliced.at(1)};
+    bool newChannel{false};
+    if (channels.find(name) == channels.end()) {
+        newChannel = true;
+        channels.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(name),
+            std::forward_as_tuple(this, name)
+        );
+    }
 
-//     {
-//         lock_guard<mutex> coutLock{outputMutex};
-//         cout << ": Peer " << clientSocket << " disconnected" << endl;
-//     }
+    auto peer{connections.at(fd)};
+    {
+        channels.at(name).joinChannel(peer);
+        lock_guard<mutex> lockConnections(connectionsLocker);
+        connections.extract(fd);
+        epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, nullptr);
+    }
 
-//     connections[clientSocket].first.active = false;
-//     close(connection.socket);
-//     return 0;
-// }
+    if (newChannel) channels.at(name).setAdmin(peer);
+
+    return 0;
+}
+
+auto Server::sendMsg(const string &msg, socket_t fd) -> decltype(sendMsg(msg, fd)) {
+    auto peer{connections.at(fd)};
+    if (send(fd, msg.c_str(), msg.length(), 0) <= 0) {
+        cerr << "Error while sending to " << peer.nick << endl;
+        lock_guard<mutex> lockConnections(connectionsLocker);
+        if (connections.find(fd) != connections.end()) {
+            Utils::msgPrint(
+                outputMutex,
+                "Peer ",
+                connections.at(fd).nick,
+                " disconnected"
+            );
+            shutdown(fd, SHUT_RDWR);
+            connections.extract(fd);
+        }
+        return -1;
+    }
+    return 0;
+}

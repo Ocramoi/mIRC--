@@ -47,9 +47,7 @@ class Server {
         int serverSocket{INT_MAX}, clientSocket{INT_MAX};
         atomic_bool listening{true};
 
-        // TODO reimplement future cacheing
-        // unordered_map<indexing_t, pair<, future<status_t>>> connections;
-        unordered_map<socket_t, Conn::USER_CONNECTION_t> connections;
+        unordered_map<socket_t, Conn::USER_CONNECTION_t> connections{};
         mutex connectionsLocker;
 
         unordered_map<string, Channel> channels;
@@ -59,18 +57,15 @@ class Server {
 
         void setup();
         status_t setupListener();
-        // status_t setupSender();
         status_t asyncListener();
-        // status_t receiveFromConnection(socket_t clientSocket);
-
-        future<status_t> listenerHandler;
 
         char msgTmp[Conn::maxMsgSize + 1];
-
+        status_t sendMsg(const string &msg, socket_t fd);
+        status_t handleJoin(const string &raw, socket_t fd);
+        status_t handleNick(const string &raw, socket_t fd);
     public:
-        static serverHandlers_t handlers;
-        static addrinfo serverHints,
-            peerHints;
+        static addrinfo serverHints;
+        future<status_t> listenerHandler;
         Server(
             string &_port,
             mutex &_outputMutex
@@ -79,6 +74,38 @@ class Server {
             setup();
         };
         ~Server();
+        void kill();
+        serverHandlers_t handlers{{
+            {
+            "/join", {
+            "/join [channel], Joins channel based on argument",
+            [&](const string& raw, socket_t fd) -> void {
+                handleJoin(raw, fd);
+            }
+        }
+        }, {
+            "/nickname", {
+            "/nickname [nick], Client is regonized by name on argument",
+            [&](const string& raw, socket_t fd) -> void {
+                handleNick(raw, fd);
+            }
+        }}, {
+            "/ping", {
+            "/ping, Pong! (pings the server)",
+            [&](const string&, socket_t fd) -> auto {
+                sendMsg("PONG", fd);
+            }
+        }}, {
+            "/commands", {
+            "/commands, Prints all available commands",
+            [&](const string&, socket_t fd) -> auto {
+                string tmp{""};
+                for (const auto& command : handlers)
+                    tmp += command.first + "-> " + command.second.first + "; ";
+                sendMsg(tmp, fd);
+            }
+        }}
+        }};
 
         // status_t removePeer(const socket_t& conn);
         // size_t nConnectedPeers();
