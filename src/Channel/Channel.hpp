@@ -23,8 +23,13 @@ using std::future;
 using std::async;
 using std::atomic_bool;
 using std::pair;
+using std::function;
 
-using epoll_event=struct epoll_event;
+using epoll_event = struct epoll_event;
+using channelHandlers_t = unordered_map<
+    string,
+    pair<string, function<void(const string&, socket_t fd)>>
+    >;
 
 class Channel {
     friend class Server;
@@ -41,12 +46,15 @@ class Channel {
         status_t channelListen();
         status_t setup();
         char msgTmp[Conn::maxMsgSize + 1]; int msgCount;
+        Conn::USER_CONNECTION_t admin;
     public:
         Channel(Server *_server, string _name) : server(_server), name(_name) {
             setup();
         };
         ~Channel();
-        status_t joinChannel(Conn::USER_CONNECTION_t &con);
+        status_t joinChannel(Conn::USER_CONNECTION_t& con);
+        status_t setAdmin(Conn::USER_CONNECTION_t& con);
+        static channelHandlers_t handlers;
 };
 
 #endif // CHANNEL_H_

@@ -3,6 +3,13 @@
 #include "../Server/Server.hpp"
 #include "../Utils/Utils.hpp"
 
+decltype(Channel::handlers) Channel::handlers = {
+"/kick", {
+"Closes connection to specified user",
+[](const string& raw, socket_t fd) -> void {}
+}
+};
+
 auto Channel::setup() -> decltype(setup()) {
     events = reinterpret_cast<epoll_event*>(calloc(Conn::maxEvts, sizeof(decltype(event))));
     active.store(true);

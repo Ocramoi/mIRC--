@@ -147,7 +147,7 @@ auto Server::asyncListener() -> decltype(Server::asyncListener()) {
                 auto clientIp{Utils::ipToString(reinterpret_cast<sockaddr*>(&curServerAddr), clientLen)};
 
                 lock_guard<mutex> conLock{connectionsLocker};
-                connections[newServerFd] = { .nick = clientIp, .socket = newServerFd, .active = true };
+                connections[newServerFd] = { .nick = clientIp, .ipString = clientIp, .socket = newServerFd, .active = true };
                 channels.emplace(
                     std::piecewise_construct,
                     std::forward_as_tuple("main"),

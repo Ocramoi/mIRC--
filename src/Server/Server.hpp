@@ -26,12 +26,13 @@ using std::future;
 using std::pair;
 using std::vector;
 using std::endl;
+using std::function;
 
 using epoll_event = struct epoll_event;
 
 using serverHandlers_t = unordered_map<
     string,
-    pair<string, void(const string&, socket_t fd)>
+    pair<string, function<void(const string&, socket_t fd)>>
     >;
 
 class Server {

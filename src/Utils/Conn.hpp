@@ -17,7 +17,8 @@ namespace Conn {
     constexpr int maxEvts{512};
     static string PORT{"6667"};
     using USER_CONNECTION_t = struct {
-        string nick;
+        string nick,
+            ipString;
         int socket;
         bool active;
     };
