@@ -11,9 +11,10 @@ Projeto da Disciplina **SSC0142 - Redes de Computadores (2022)**, no qual implem
 
 > O código foi compilado utilizando `clang++ versão 11.0.0`, com `target = Linux GNU x86_64`. O código foi desenvolvido em `C++17`, usando a `flag -std=gnu++17` durante a compilação.
 
-## Vídeo
-
-O vídeo de apresentação do projeto pode ser acessado através do YouTube ou Google Drive.
+## [Vídeos demonstrativos](https://drive.google.com/drive/folders/1BgSQKQgKqrTYgSKYwyWIAmbiJKl1vq3K?usp=sharing)
+- [Introdução ao projeto](https://drive.google.com/file/d/1RyqCuXUYl2b_GpqYlP0PVoPGghQf896W/view?usp=sharing)
+- [Demonstração do código](https://drive.google.com/file/d/1y3svThCtpExnWe2rklY5v8YA8MJeJs-C/view?usp=sharing)
+- [Execução da aplicação](https://drive.google.com/file/d/1a0xV5xIwSjexgVPJdLCmaV-gh8MLWFwF/view?usp=sharing)
 
 ## Árvore de arquivos do projeto
     .
@@ -59,8 +60,3 @@ O servidor será iniciado na porta `6667` (essa configuração está contida na 
 `/whois nomeUsurio` - Retorna o endereço IP do usuário apenas para o administrador.
 
 > Para mandar mensagens no servidor, apenas digite normalmente no terminal e aperte **ENTER**.
-
-## [Vídeos demonstrativos](https://drive.google.com/drive/folders/1BgSQKQgKqrTYgSKYwyWIAmbiJKl1vq3K?usp=sharing)
-- [Introdução ao projeto](https://drive.google.com/file/d/1RyqCuXUYl2b_GpqYlP0PVoPGghQf896W/view?usp=sharing)
-- [Demonstração do código](https://drive.google.com/file/d/1y3svThCtpExnWe2rklY5v8YA8MJeJs-C/view?usp=sharing)
-- [Execução da aplicação](https://drive.google.com/file/d/1a0xV5xIwSjexgVPJdLCmaV-gh8MLWFwF/view?usp=sharing)
