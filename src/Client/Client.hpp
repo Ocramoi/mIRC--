@@ -2,6 +2,7 @@
 #define CLIENT_H_
 
 #include "../Utils/Conn.hpp"
+#include "../Channel/Channel.hpp"
 
 #include <bits/stdc++.h>
 #include <errno.h>
@@ -24,9 +25,6 @@ using std::future;
 using std::pair;
 using std::vector;
 
-using status_t = char;
-using indexing_t = string;
-
 /*
 ** TODO Use numerical IP address instead of string
 ** NOTE Maybe use a lock-free alternative for connection handling?
@@ -45,7 +43,6 @@ class Client {
 
         // TODO reimplement future cacheing
         unordered_map<indexing_t, pair<Conn::USER_CONNECTION_t, future<status_t>>> connections;
-        // unordered_map<string, Conn::USER_CONNECTION_t> connections;
         mutex connectionsLocker;
 
         mutex &outputMutex;
@@ -66,6 +63,7 @@ class Client {
         ) : nick(_nick),
             outputMutex(_outputMutex),
             port(_port) {
+            memset(serverAddrTmp, 0, sizeof(*serverAddrTmp)); memset(serverAddr, 0, sizeof(*serverAddr));
             setup();
         };
         ~Client();

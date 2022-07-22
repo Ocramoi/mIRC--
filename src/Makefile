@@ -16,7 +16,7 @@ DEBUG_FLAGS=-Wextra -Og -g3 -DDEBUG -std=gnu++17
 VALGRIND_FLAGS=
 LD_FLAGS:=-lpthread
 
-all: setup main.o Client.o Utils.o
+all: setup main.o Client.o Server.o Utils.o
 	$(CC) $(COMPILE_FLAGS) *.o -o $(EXEC) $(LD_FLAGS)
 
 main.o: main.cpp
@@ -28,8 +28,11 @@ Client.o: Client/Client.cpp
 Utils.o: Utils/Utils.cpp
 	$(CC) $(COMPILE_FLAGS) Utils/Utils.cpp -c
 
-# classes.o: $(filter-out $(wildcard **/flycheck_*.cpp), $(wildcard classes/*.cpp))
-# 	$(CC) $(COMPILE_FLAGS) $(filter-out $(wildcard **/flycheck_*.cpp), $(wildcard classes/*.cpp)) -c
+Server.o: Server/Server.cpp Channel.o
+	$(CC) $(COMPILE_FLAGS) Server/Server.cpp -c
+
+Channel.o: Channel/Channel.cpp
+	$(CC) $(COMPILE_FLAGS) Channel/Channel.cpp -c
 
 setup:
 	rm -rf build

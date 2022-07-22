@@ -1,5 +1,7 @@
 #include "Utils.hpp"
 
+#include "../Client/Client.hpp"
+
 handlers_t Utils::cmmdHandlers = {
     {
         "/commands", {
@@ -59,4 +61,32 @@ auto Utils::connectParameters(const string &raw, const shared_ptr<Client> &clien
     if (any_of(params.begin(), params.end(), [=](auto s) -> auto { return s.empty(); })) return -1;
     client->connectToPeer(params[0], params[1]);
     return 1;
+}
+
+auto Utils::setNonBlocking(int fd) -> decltype(setNonBlocking(fd)) {
+    int flags, s;
+
+    flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        return INVALID;
+    }
+
+    flags |= O_NONBLOCK;
+    s = fcntl (fd, F_SETFL, flags);
+    if (s == -1)
+        return NONBLOCK;
+
+    return SUCCESS;
+}
+
+auto Utils::split(
+    const string &raw,
+    char delimiter
+) -> decltype(split(raw, delimiter)) {
+    vector<string> r;
+    string tmp;
+    stringstream rawStream{raw};
+    while (std::getline(rawStream, tmp, delimiter))
+        r.push_back(tmp);
+    return r;
 }

@@ -5,11 +5,16 @@
 #include <netdb.h>
 #include <iostream>
 
+using status_t = char;
+using indexing_t = std::string;
+using socket_t = int;
+
 using std::string;
 
 namespace Conn {
     constexpr size_t maxConns{256},
         maxMsgSize{4096};
+    constexpr int maxEvts{512};
     static string PORT{"6667"};
     using USER_CONNECTION_t = struct {
         string nick;
